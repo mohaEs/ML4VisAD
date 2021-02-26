@@ -3,9 +3,10 @@ Machine Learning for the Visualization of Alzheimer's Disease
 
 Paper under review.
 
-Data_XY_BLD is the dataset.
-Results-3000epochs.zip contains all the results of the ML algorithm for diagnosis and prognosis of AD on 10-fold cross validation.
+Data_XY_BLD_v0 is the CSV dataset, a subset of QT-PAD challenge dataset and ADNI. 
 
-Codes also will be added for research purposes after patent disclusre submission. 
+Results_v5-4000epochs(paper).zip contains all the results of the ML algorithm for diagnosis and prognosis of AD on 10-fold cross validation.
+
+Pr_Tensorization_v5_RID(paper).py is the code including data normalization, network model and train/testing with cross-validation.
 
 ![picture](screenshot.png)
