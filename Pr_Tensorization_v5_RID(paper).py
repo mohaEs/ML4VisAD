@@ -12,11 +12,8 @@ import numpy
 seed = 7
 numpy.random.seed(seed)
 import tensorflow as tf
-#tf.random.set_seed(221)
-tf.random.set_random_seed(221)
 
-# from tensorflow import set_random_seed
-# set_random_seed(2)
+
 
 import tensorflow.keras
 import math
@@ -42,22 +39,13 @@ from skimage import io
 ####################
 ####### Functions #############
 ####################
-#def custom_loss_1 (y_true, y_pred):
-#    A = tensorflow.keras.losses.mean_absolute_error(y_true*BalancingWeights, y_pred*BalancingWeights)
-#    return A
 
 def custom_loss_2 (y_true, y_pred):
     A = tensorflow.keras.losses.mean_absolute_error(y_true, y_pred)
     #B = keras.losses.categorical_crossentropy(y_true[:,-4:], y_pred[:,-4:])
     return A
 
-def custom_loss (y_true, y_pred):
-    A = keras.losses.mean_squared_error(y_true[:,0:4], y_pred[:,0:4])
-    B = keras.losses.categorical_crossentropy(y_true[:,-4:], y_pred[:,-4:])
-    C = keras.losses.mean_absolute_error(y_true[:,4:-4], y_pred[:,4:-4])
-    
-    m=1
-    return((m*A)+ (n*B)+100*C)
+
 
 
 
@@ -135,7 +123,7 @@ a = parser.parse_args()
 
 a.max_epochs=4000
 a.BatchSize=500
-a.output='C:\\Users\\meslami\\Desktop\\Temp/v5-4000epochs/'
+a.output='./v5-4000epochs/'
 outputFolderChild=a.output+'/Images/'
 
 import os
@@ -153,6 +141,7 @@ except:
 ###### Reading Data ##############    
 ####################    
 
+# AllDataset = pandas.read_csv('Data_XY_BLD_CutOff.csv', low_memory=False)
 AllDataset = pandas.read_csv('Data_XY_BLD_v0.csv', low_memory=False)
 AllDataset = AllDataset.set_index(AllDataset.RID)
 
@@ -221,10 +210,10 @@ CSF_X = AllDataset.loc[:,['ABETA', 'PTAU', 'TAU']]
 CSF_Y = AllDataset.loc[:, ['DX_BLD', 'DX_6','DX_12', 'DX_24']]#
 CSF_RID = AllDataset.RID
 
-print(np.nanmin(CSF_X.TAU, axis=0))
-print(np.nanmean(CSF_X.TAU, axis=0))
-print(np.nanmax(CSF_X.TAU, axis=0))
-CSF_X.TAU.isnull().sum()
+print(np.nanmin(CSF_X.ABETA, axis=0))
+print(np.nanmean(CSF_X.ABETA, axis=0))
+print(np.nanmax(CSF_X.ABETA, axis=0))
+CSF_X.ABETA.isnull().sum()
 
 # normalize data
 CSF_X = (CSF_X - CSF_X.mean()) / (CSF_X.max() - CSF_X.min())
@@ -423,14 +412,17 @@ model_tensorization=Model(inputs= [MRI_visible, PET_visible, COG_visible, CSF_vi
 ##########################################################################################
 
 
-OPTIMIZER_1=tensorflow.keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+# OPTIMIZER_1=tensorflow.keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
 OPTIMIZER_2=tensorflow.keras.optimizers.Adam(lr=0.001, beta_1=0.99, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-OPTIMIZER_3=tensorflow.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+# OPTIMIZER_3=tensorflow.keras.optimizers.Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 
 
 import time
 model_tensorization.compile(loss=custom_loss_2, optimizer=OPTIMIZER_2)
 model_tensorization.save_weights('SavedInitialWeights_tensors.h5')
+callback_1 = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=500, restore_best_weights=True)
+callback_2 = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=800, restore_best_weights=True)
+
 
 for repeator in range(0,1):
 
@@ -439,7 +431,6 @@ for repeator in range(0,1):
     for train, test in kfold.split(X_all[1], COG_Y.iloc[:,-1].values):
         FoldCounter=FoldCounter+1   
         
-#        model_classifier_1.load_weights('SavedInitialWeights.h5')        
         model_tensorization.load_weights('SavedInitialWeights_tensors.h5')        
         Y_train_here_4Net=Y_all_tensors[train,:,:,:]
         X_train_here_4Net=[X_all[0][train], X_all[1][train], X_all[2][train], X_all[3][train],X_all[4][train]]
@@ -448,11 +439,12 @@ for repeator in range(0,1):
         print('---Repeat No:  ', repeator+1, '  ---Fold No:  ', FoldCounter)        
         
         start_time = time.time()
-        History = model_tensorization.fit(X_train_here_4Net, Y_train_here_4Net, validation_split=0.1,  epochs=a.max_epochs, batch_size=a.BatchSize, verbose=1)#250-250
+        History = model_tensorization.fit(X_train_here_4Net, Y_train_here_4Net, 
+        validation_split=0.1,  epochs=a.max_epochs, batch_size=a.BatchSize,
+         verbose=1 , callbacks=[callback_1, callback_2]) # , callbacks=[callback_1, callback_2]
         elapsed_time = time.time() - start_time
         print('----- train elapsed time:', elapsed_time)
-        # model_tensorization.compile(loss=custom_loss_1, optimizer=OPTIMIZER_1)
-        # History = model_tensorization.fit(X_train_here_4Net, Y_train_here_4Net, validation_split=0.01,  epochs= 250, batch_size=BatchSize, verbose=1)#250-250
+
 
         # summarize history for loss
         plt.plot(History.history['loss'])
