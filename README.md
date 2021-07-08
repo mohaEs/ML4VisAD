@@ -9,4 +9,6 @@ Results_v5-4000epochs(paper).zip contains all the results of the ML algorithm fo
 
 Pr_Tensorization_v5_RID(paper).py is the code including data normalization, network model and train/testing with cross-validation.
 
+The zip file contains some results.
+
 ![picture](screenshot.png)
