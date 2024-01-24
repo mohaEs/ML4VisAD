@@ -1,7 +1,8 @@
 # ML4VisAD
 Machine Learning for the Visualization of Alzheimer's Disease
 
-Paper under review.
+The full paper is available: https://doi.org/10.1016/j.artmed.2023.102543
+Eslami, M., Tabarestani, S. and Adjouadi, M., 2023. A unique color-coded visualization system with multimodal information fusion and deep learning in a longitudinal study of Alzheimer's disease. Artificial Intelligence in Medicine, 140, p.102543.
 
 Tensorflow 2.4 and Python 3.7 are used for this research. 
 Requirements are available at requirements.txt
